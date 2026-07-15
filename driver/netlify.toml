@@ -1,0 +1,20 @@
+# Netlify config for the DAWAL driver portal (static, no build step).
+# Deploy: point a separate Netlify site's publish directory at this `driver/` folder.
+[build]
+  publish = "."
+  command = ""
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Set the API base before deploy via a meta tag in index.html <head>:
+#   <meta name="dawal-api" content="https://YOUR-BACKEND-URL">

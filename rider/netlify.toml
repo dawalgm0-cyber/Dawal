@@ -1,0 +1,24 @@
+# Netlify config for the DAWAL rider PWA (static, no build step).
+# Deploy: point a Netlify site's base/publish directory at this `rider/` folder.
+[build]
+  publish = "."
+  command = ""
+
+# SPA-style: unknown paths fall back to index.html (so /?confirm=... deep links work).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Basic hardening headers.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# NOTE: set the API base before deploy. This static app reads it from a meta tag:
+#   <meta name="dawal-api" content="https://YOUR-BACKEND-URL">
+# Add that to index.html <head> (or inject via Netlify snippet). Without it the
+# app falls back to http://localhost:8000 (dev only).

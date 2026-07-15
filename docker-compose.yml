@@ -1,0 +1,77 @@
+services:
+  postgres:
+    # Pinned exactly to postgres:16 (never :latest) so local dev cannot drift
+    # to a version the eventual host does not offer.
+    image: postgres:16
+    container_name: dawal_postgres
+    environment:
+      POSTGRES_USER: dawal
+      POSTGRES_PASSWORD: dawal
+      POSTGRES_DB: dawal
+    ports:
+      - "5432:5432"
+    volumes:
+      - dawal_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dawal -d dawal"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: dawal_backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg://dawal:dawal@postgres:5432/dawal
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    # Applies migrations, seeds config, then serves the API.
+    command: >
+      sh -c "alembic upgrade head &&
+             python -m app.seed &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  rider:
+    # Static host for the vanilla-JS rider PWA.
+    image: nginx:alpine
+    container_name: dawal_rider
+    ports:
+      - "${RIDER_PORT:-8080}:80"
+    volumes:
+      - ./rider:/usr/share/nginx/html:ro
+
+  driver:
+    # Static host for the vanilla-JS driver portal (no PWA shell in v1).
+    image: nginx:alpine
+    container_name: dawal_driver
+    ports:
+      - "${DRIVER_PORT:-8081}:80"
+    volumes:
+      - ./driver:/usr/share/nginx/html:ro
+
+  admin:
+    build: ./admin
+    container_name: dawal_admin
+    depends_on:
+      - backend
+    environment:
+      # The browser (not the container) calls the API, so this points at the host.
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      # Host port is configurable (default 3000). Override with ADMIN_PORT if 3000
+      # is already in use on the host.
+      - "${ADMIN_PORT:-3000}:3000"
+    volumes:
+      - ./admin:/app
+      - /app/node_modules  # keep the image's installed deps
+    command: npm run dev
+
+volumes:
+  dawal_pgdata:

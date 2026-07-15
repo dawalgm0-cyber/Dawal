@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+
+# Node / Next (belt-and-suspenders; admin/ has its own too)
+node_modules/
+.next/
+*.tsbuildinfo
+
+# Env / secrets (only the literal .env — .env.example templates are committed)
+.env
+.env.local
+*.local
+
+# Local scratch
+*.sqlite
+*.sqlite3
+*.db
+.DS_Store
+
+# Uploaded license / proof docs (local-disk MVP)
+backend/uploads/
