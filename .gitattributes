@@ -1,0 +1,14 @@
+# Store all text files as LF in the repo and check them out as LF everywhere.
+# The runtime is Linux (Docker + CI), so LF is canonical; this stops the
+# CRLF<->LF churn between Windows (local) and Linux (Claude Code / CI).
+* text=auto eol=lf
+
+# Binary assets — never touch line endings.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.woff binary
+*.woff2 binary
